@@ -18,51 +18,32 @@
             "pages": [
               "index",
               "quickstart",
-              "development"
+              "manual-installation"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Admin",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "admin/settings",
+              "admin/emails-and-email-providers",
+              "admin/oauth-social-login",
+              {
+                "group": "Payment Providers",
+                "pages": [
+                  "admin/payment-providers/stripe",
+                  "admin/payment-providers/paddle",
+                  "admin/payment-providers/lemon-squeezy"
+                ]
+              }
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Customer",
             "pages": [
               "essentials/markdown",
               "essentials/code",
               "essentials/images",
               "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
             ]
           }
         ]
@@ -71,18 +52,13 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
+          "anchor": "Main",
+          "href": "https://soos.my",
           "icon": "book-open-cover"
         },
         {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "slack"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
+          "anchor": "Demo",
+          "href": "https://aleuto.soos.my",
           "icon": "newspaper"
         }
       ]
@@ -96,13 +72,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:support@soos.my"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Website",
+      "href": "https://soos.my"
     }
   },
   "contextual": {
@@ -111,17 +87,13 @@
      "view",
      "chatgpt",
      "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
+     "perplexity"
    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/",
+      "github": "https://github.com/"
     }
   }
 }

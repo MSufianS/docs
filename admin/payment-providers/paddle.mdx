@@ -1,0 +1,57 @@
+---
+title: 'Paddle'
+description: 'Aleuto SaaS comes with support for Paddle out of the box. This allows you to start accepting payments from your customers right away.'
+---
+
+Check out the video below to see how you can configure Paddle in your Aleuto application, display plans and go through the checkout process in a few minutes.
+
+## Configuration
+
+First, you will need to create a [Paddle](https://paddle.com/). account. Once you have created your account, you will need to get your credentials from Paddle.
+
+In the Admin Panel and under "Settings" click on "Payment Providers". You will be redirected to the payment providers settings page.
+
+Click on "Paddle" and using the toggle "is active" you can enable/disable the payment provider. (Don't forget to click "Save" after you make any changes).
+
+Once you enable Paddle, you will need to configure the credentials for it. To do that, click on the payment provider you want to configure, then click on "Edit credentials". You will be redirected to the payment provider credentials page.
+
+You will need to copy some values from your Paddle account to your application to be able to connect it. To do that please follow the following steps:
+
+1. Login to Paddle Billing Dashboard.
+
+2. Under **"Developer Tools"** > **"Authentication"** you will find your **Vendor Id** (also referred to as **seller ID**). Enter it into the field in the form.
+
+3. Under **"Developer Tools"** > **"Authentication"** > **"Client-side tokens"**, click on **"Generate client-side token"**. Once created, enter it into the field in the form.
+
+4. On the same page, click on **"Generate API Key"**, and enter a name and a description for the key. Copy the generated key and enter it into the field in the form.
+
+5. Head to **"Developer Tools"** > **"Notifications"** and click on **"New Destination"**. Enter a description for the webhook, and select **"Webhook"** as **"Notification Type"**, and enter the URL below.
+    ```bash
+    https://yourdomain.com/api/payments-providers/paddle/webhook
+    ```
+
+6. From the list of events, select all the events under **"Transaction"**, **"Subscription"** and **"Adjustment"**. So all the following events should be selected:
+    - `transaction.xyz`.
+    - `subscription.xyz`.
+    - `adjustment.xyz`.
+
+7. Click on **"Save Destination"** and copy the generated webhook secret key and enter it into the field in the form.
+
+8. In case you are installing this on a test environment, you can enable sandbox mode. This will use the Paddle sandbox environment instead of the live environment.
+
+    <Warning>
+        **WARNING**: Important: NEVER enable sandbox mode on a production environment!
+    </Warning>
+
+9. Head to **"Checkout"** > **"Checkout Settings"** and under **"Default payment link"**, enter the following URL:
+    ```bash
+    https://yourwebsite.com/payment-provider/paddle/payment-link
+    ```
+
+10. Click on **"Save"**.
+
+<Info>
+    **TIP**: All the above steps are also available to you inside your admin panel on the right hand side of the credentials page as shown in the image above.
+</Info>
+
+Once you configure your Paddle settings, all you need to do is to define your plans and products in the admin panel and **Aleuto** will create them automatically in your Stripe account and keep them in sync. You don't need to add any configurations config files or anything else.

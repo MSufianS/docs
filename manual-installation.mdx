@@ -1,0 +1,192 @@
+---
+title: "Manual Installation"
+description: "Start building awesome documentation in minutes"
+---
+
+## Get started in three steps
+
+Get your documentation site running locally and make your first customization.
+
+### Step 1: Connect to server
+
+<AccordionGroup>
+  <Accordion icon="rectangle-terminal" title="SSH Terminal">
+    1. Connect server via SSH terminal: `ssh root@123.456.789.321`
+    2. System will ask to insert the password to connect.
+
+    <Tip>If you using key to connect, `ssh -i yourkey.pem root@123.456.789.321`</Tip>
+  </Accordion>
+</AccordionGroup>
+
+### Step 2: Install and configure
+
+<AccordionGroup>
+    <Accordion icon="rectangle-terminal" title="Install & update packages">
+        ```sh title="Update Package List"
+        sudo apt update
+        ```
+        ```sh title="Upgrade Packages"
+        sudo apt upgrade -y
+        ```
+        ```sh title="Install Basic Packages"
+        sudo apt-get install -y software-properties-common curl gnupg debian-keyring debian-archive-keyring apt-transport-https \
+        ca-certificates build-essential dos2unix gcc git git-lfs libmcrypt4 libpcre3-dev libpng-dev chrony make pv \
+        python3-pip re2c supervisor unattended-upgrades whois vim cifs-utils bash-completion zsh zip unzip expect
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Create Swap Space">
+        ```sh title="Create Swap Space"
+        sudo fallocate -l "$(free -m | awk '/Mem:/ {print $2}')M" /swapfile && \
+        sudo chmod 600 /swapfile && \
+        sudo mkswap /swapfile && \
+        sudo swapon /swapfile
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install Nginx">
+        ```sh title="Install Nginx"
+        sudo apt install -y nginx
+        ```
+        ```sh title="Remove the default site"
+        sudo rm /etc/nginx/sites-enabled/default
+        ```
+        ```sh title="Restart nginx"
+        sudo service nginx restart
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install PHP">
+        ```sh title="Install Some PPAs"
+        sudo apt-add-repository ppa:ondrej/php -y
+        ```
+        ```sh title="Update Package Lists"
+        sudo apt-get update -y
+        ```
+        ```sh title="Install Generic PHP packages"
+        sudo apt-get install -y --allow-change-held-packages \
+        php-imagick php-memcached php-redis php-xdebug php-dev imagemagick mcrypt
+        ```
+        ```sh title="PHP 8.4"
+        sudo apt-get install -y --allow-change-held-packages \
+        php8.4 php8.4-bcmath php8.4-bz2 php8.4-cgi php8.4-cli php8.4-common php8.4-curl php8.4-dba php8.4-dev \
+        php8.4-enchant php8.4-fpm php8.4-gd php8.4-gmp php8.4-imap php8.4-interbase php8.4-intl php8.4-ldap \
+        php8.4-mbstring php8.4-mysql php8.4-odbc php8.4-opcache php8.4-pgsql php8.4-phpdbg php8.4-pspell php8.4-readline \
+        php8.4-snmp php8.4-soap php8.4-sqlite3 php8.4-sybase php8.4-tidy php8.4-xdebug php8.4-xml php8.4-xmlrpc php8.4-xsl \
+        php8.4-zip php8.4-memcached php8.4-redis
+        ```
+        ```sh title="PHP 8.4"
+        sudo printf "[openssl]\n" | sudo tee -a /etc/php/8.3/fpm/php.ini \
+        sudo printf "openssl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | sudo tee -a /etc/php/8.3/fpm/php.ini \
+        sudo printf "[curl]\n" | sudo tee -a /etc/php/8.3/fpm/php.ini \
+        sudo printf "curl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | sudo tee -a /etc/php/8.3/fpm/php.ini
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install Composer">
+        ```sh title="Install Composer"
+        sudo curl -sS https://getcomposer.org/installer | sudo php
+        ```
+        ```sh title="Move composer"
+        sudo mv composer.phar /usr/bin/composer
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install Node and NPM">
+        ```sh title="NodeJS"
+        curl -fsSL https://deb.nodesource.com/setup_21.x | sudo -E bash -
+        ```
+        ```sh title="Update Package Lists"
+        sudo apt-get update -y
+        ```
+        ```sh title="Install Node"
+        sudo apt install -y nodejs \
+        sudo /usr/bin/npm install -g npm \
+        sudo /usr/bin/npm install -g gulp-cli \
+        sudo /usr/bin/npm install -g bower \
+        sudo /usr/bin/npm install -g yarn \
+        sudo /usr/bin/npm install -g grunt-cli
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install Redis">
+        ```sh title="Install Redis"
+        sudo apt install -y redis-server
+        ```
+        ```sh
+        sudo systemctl enable redis-server
+        ```
+        ```sh
+        sudo service redis-server start
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install Postgres">
+        ```sh title="Install Postgres"
+        sudo apt-get install -y postgresql-17 postgresql-server-dev-12 postgresql-17-postgis-3 postgresql-17-postgis-3-scripts
+        ```
+        ```sh title="Configure Postgres Users"
+        sudo -u postgres psql -c "CREATE ROLE homestead LOGIN PASSWORD 'YOUR_DATABASE_PASSWORD' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;"
+        ```
+        ```sh title="Configure Postgres Remote Access"
+        sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/17/main/postgresql.conf \
+        sudo echo "host    all             all             0.0.0.0/0               md5" | tee -a /etc/postgresql/17/main/pg_hba.conf
+        ```
+        ```sh
+        sudo -u postgres /usr/bin/createdb --echo --owner=homestead homestead
+        ```
+        ```sh
+        sudo service postgresql restart
+        ```
+        ```sh title="Disable to lower initial overhead"
+        sudo systemctl disable postgresql
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install Certbot (LetsEncrypt)">
+        ```sh title="Install certbot"
+        sudo apt install -y certbot python3-certbot-nginx
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Install memcache">
+        ```sh title="Install Memcached"
+        sudo apt-get install -y memcached
+        ```
+    </Accordion>
+    <Accordion icon="rectangle-terminal" title="Upgrade check & Clean Up">
+        ```sh title="Upgrade Check"
+        sudo apt upgrade -y
+        ```
+        ```sh title="Clean Up"
+        sudo apt -y autoremove \
+        sudo apt -y clean
+        ```
+    </Accordion>
+</AccordionGroup>
+
+### Step 3: Go live
+
+<Accordion icon="rocket" title="Publish your docs">
+  1. Commit and push your changes.
+  2. Your docs will update and be live in moments!
+</Accordion>
+
+## Next steps
+
+Now that you have your docs running, explore these key features:
+
+<CardGroup cols={2}>
+
+<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
+  Learn MDX syntax and start writing your documentation.
+</Card>
+
+<Card title="Customize style" icon="palette" href="/essentials/settings">
+  Make your docs match your brand perfectly.
+</Card>
+
+<Card title="Add code examples" icon="square-code" href="/essentials/code">
+  Include syntax-highlighted code blocks.
+</Card>
+
+<Card title="API documentation" icon="code" href="/api-reference/introduction">
+  Auto-generate API docs from OpenAPI specs.
+</Card>
+
+</CardGroup>
+
+<Note>
+  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+</Note>

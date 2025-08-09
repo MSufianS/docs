@@ -1,0 +1,68 @@
+---
+title: 'Lemon Squeezy'
+description: 'Aleuto SaaS comes with support for Lemon Squeezy out of the box. This allows you to start accepting payments from your customers right away.'
+---
+
+Check out the video below to see how you can configure Lemon Squeezy in your Aleuto application, display plans and go through the checkout process in a few minutes.
+
+## Configuration
+
+First, you will need to create a [Lemon Squeezy](https://www.lemonsqueezy.com/). account. Once you have created your account, you will need to get your credentials from Lemon Squeezy.
+
+In the Admin Panel and under "Settings" click on "Payment Providers". You will be redirected to the payment providers settings page.
+
+Click on "Lemon Squeezy" and using the toggle "is active" you can enable/disable the payment provider. (Don't forget to click "Save" after you make any changes).
+
+Once you enable Lemon Squeezy, you will need to configure the credentials for it. To do that, click on the payment provider you want to configure, then click on "Edit credentials". You will be redirected to the payment provider credentials page.
+
+You will need to copy some values from your Lemon Squeezy account to your application to be able to connect it. To do that please follow the following steps:
+To integrate Lemon Squeezy with your application, you need to do the following steps:
+
+1. Login to [Lemon Squeezy Dashboard](https://app.lemonsqueezy.com/).
+
+2. On the left menu, click on "Settings" > "API". Click on the "+" sign on the right to create a new API key. Give the API key a name and click "Create API Key". Copy the generated key into the form in the field called "API key".
+
+3. On the same page, on the left menu, click on "Settings" > "Stores". Copy the store id ("#xxxxx") without the # into the "Store ID" field.
+
+4. On the same page, on the left menu, click on "Settings" > "Webhooks". Click on "+" to create a new webhook and enter the URL below.
+    ```bash
+    https://yourwebsite.com/api/payments-providers/lemon-squeezy/webhook
+   ```
+
+5. Generate a new webhook signing secret and copy it into the form in the field called "Signing Secret" and also into the "Signing secret" field in the Lemon Squeezy Webhook creation form.
+
+6. You can use LastPass to generate a secure webhook signing secret.
+    - `order_created`
+    - `order_refunded`
+    - `subscription_created`
+    - `subscription_updated`
+    - `subscription_cancelled`
+    - `subscription_resumed`
+    - `subscription_expired`
+    - `subscription_paused`
+    - `subscription_unpaused`
+    - `subscription_payment_failed`
+    - `subscription_payment_success`
+    - `subscription_payment_recovered`
+    - `subscription_payment_refunded`
+    - `subscription_plan_changed`
+
+    Click on "Save Webhook" and copy the generated webhook signing secret and enter it into the field in the form.
+    <Info>
+        **TIP**: All the above steps are also available to you inside your admin panel on the right hand side of the credentials page as shown in the image above.
+    </Info>
+
+## Configuring Lemon Squeezy Plans & Products
+
+Unfortunately, Lemon Squeezy doesn't offer an API that SaaSykit can use to automatically generate plans products for you just like it's the case with Stripe & Paddle. This means that you will need to manually create the plans and products in Lemon Squeezy and link them to your application.
+
+First, create your subscription plans & products in the admin panel and setup their prices.
+
+Once you are done with that, it's time to create your plans and products in Lemon Squeezy.
+
+To do that, login to your Lemon Squeezy account and on the left menu, click on "Store" > "Products". Click on the "+ New Product" button on the right to create a new product.
+
+If you are creating a subscription plan, you might need to create multiple variants to the same product. For example: if you have a "Pro" plan that is billed monthly and annually, you will need to create two variants for the same "Pro" product.
+
+Just make sure that you choose "Subscription" for the pricing model and enter the price for the plan.
+

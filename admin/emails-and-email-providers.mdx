@@ -1,0 +1,33 @@
+---
+title: 'Emails & Email Providers'
+description: 'Aleuto SaaS comes with a fully featured email system out of the box, which thanks to Laravel`s seamless integrations, allows you to send emails using many major email providers, such as Mailgun, Postmark, Amazon SES.'
+---
+
+## Email Providers
+
+**Aleuto** comes with support for the following email providers out of the box:
+- Mailgun
+- Postmark
+- Amazon SES
+- SMTP (works with any SMTP provider)
+
+And you can easily add support for any other email provider by following the [Laravel documentation](https://laravel.com/docs/12.x/mail).
+
+## Choosing Your Default Email Provider
+
+To choose your default email provider, go to the Admin Panel and under "Settings" click on "General Settings", then pick the "Email" tab. You will be redirected to the general settings page.
+
+Heere you can edit the following settings:
+- **Default Email Provider**: The email provider that will be used to send emails.
+- **Default "From" Email Name**: The name that will be used as the "From" name when sending emails.
+- **Default "From" Email Address**: The email address that will be used as the "From" email address when sending emails.
+
+## Configuring Your Email Provider
+
+After selecting your default email provider you need to configure its credentials.
+
+To configure your email provider, go to the Admin Panel and under "Settings" click on "Email Providers". You will be redirected to the email providers page.
+
+Pick the email provider you want to configure then click on "Edit credentials". You will be redirected to the email provider credentials page.
+
+Once done, click on "Save" to save your changes and you're good to go.

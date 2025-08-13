@@ -17,7 +17,6 @@
             "group": "Getting started",
             "pages": [
               "index",
-              "quickstart",
               "manual-installation"
             ]
           },
@@ -35,15 +34,6 @@
                   "admin/payment-providers/lemon-squeezy"
                 ]
               }
-            ]
-          },
-          {
-            "group": "Customer",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
             ]
           }
         ]

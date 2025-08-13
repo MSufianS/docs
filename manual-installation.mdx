@@ -1,27 +1,55 @@
 ---
-title: "Manual Installation"
-description: "Start building awesome documentation in minutes"
+title: "Manual Installation Guide"
+description: "Set up your Laravel application with Horizon and Reverb on an Ubuntu server in minutes"
 ---
 
-## Get started in three steps
+## Prerequisites
+Before starting, ensure you have the following:
+- A fresh **Ubuntu 24.04** server with root or sudo access.
+- A registered domain name with an **A record** pointing to your server’s public IP address.
+- An SSH client (e.g., Terminal, PuTTY) and an SFTP client (e.g., FileZilla).
+- A secure password for the database user.
+- Your application’s source code and database SQL file.
 
-Get your documentation site running locally and make your first customization.
+<Tip>
+    - Back up your server before proceeding.
+    - Obtain your server’s IP address from your hosting provider (e.g., AWS, DigitalOcean).
+</Tip>
 
-### Step 1: Connect to server
+## Table of Contents
+1. Connect to the Server
+2. Install and Configure Dependencies
+3. Upload Source Code
+4. Configure Application
+5. Enable HTTPS
+6. Set Up Firewall
+7. Troubleshooting
+
+## Step 1: Connect to the Server
+Connect to your server via SSH to begin the setup process.
 
 <AccordionGroup>
-  <Accordion icon="rectangle-terminal" title="SSH Terminal">
-    1. Connect server via SSH terminal: `ssh root@123.456.789.321`
-    2. System will ask to insert the password to connect.
+    <Accordion icon="rectangle-terminal" title="Connect via SSH">
+        1. Obtain your server’s IP address from your hosting provider.
+        2. Open a terminal and connect: `ssh root@<your-server-ip>`
+        3. If using a key-based connection: `ssh -i yourkey.pem root@<your-server-ip>`
 
-    <Tip>If you using key to connect, `ssh -i yourkey.pem root@123.456.789.321`</Tip>
-  </Accordion>
+            ```sh title="Verify SSH Service"
+            sudo systemctl status ssh
+            ```
+
+            <Tip>
+                - If you can’t connect, ensure port 22 is open: `sudo ufw allow 22`.
+                - Contact your hosting provider if SSH issues persist.
+            </Tip>
+    </Accordion>
 </AccordionGroup>
 
-### Step 2: Install and configure
+## Step 2: Install and Configure Dependencies
+Install the necessary software packages for your Laravel application, including Nginx, PHP 8.4, PostgreSQL, Node.js, Redis, Memcached, Supervisor, and Certbot.
 
 <AccordionGroup>
-    <Accordion icon="rectangle-terminal" title="Install & update packages">
+    <Accordion icon="rectangle-terminal" title="Update and Install Basic Packages">
         ```sh title="Update Package List"
         sudo apt update
         ```
@@ -33,38 +61,53 @@ Get your documentation site running locally and make your first customization.
         ca-certificates build-essential dos2unix gcc git git-lfs libmcrypt4 libpcre3-dev libpng-dev chrony make pv \
         python3-pip re2c supervisor unattended-upgrades whois vim cifs-utils bash-completion zsh zip unzip expect
         ```
+        ```sh title="Verify Installation"
+        git --version
+        ```
     </Accordion>
+
     <Accordion icon="rectangle-terminal" title="Create Swap Space">
         ```sh title="Create Swap Space"
         sudo fallocate -l "$(free -m | awk '/Mem:/ {print $2}')M" /swapfile && \
         sudo chmod 600 /swapfile && \
         sudo mkswap /swapfile && \
-        sudo swapon /swapfile
+        sudo swapon /swapfile && \
+        echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
         ```
+        ```sh title="Verify Swap"
+        swapon --show
+        ```
+        <Tip>
+            - Swap space prevents memory issues on low-RAM servers.
+            - Adjust the size based on your server’s needs.
+        </Tip>
     </Accordion>
+
     <Accordion icon="rectangle-terminal" title="Install Nginx">
         ```sh title="Install Nginx"
         sudo apt install -y nginx
         ```
-        ```sh title="Remove the default site"
+        ```sh title="Remove Default Site"
         sudo rm /etc/nginx/sites-enabled/default
         ```
-        ```sh title="Restart nginx"
-        sudo service nginx restart
+        ```sh title="Verify Nginx"
+        nginx -v
+        sudo systemctl status nginx
         ```
     </Accordion>
-    <Accordion icon="rectangle-terminal" title="Install PHP">
-        ```sh title="Install Some PPAs"
+
+    <Accordion icon="rectangle-terminal" title="Install PHP 8.4">
+        ```sh title="Add PHP Repository"
         sudo apt-add-repository ppa:ondrej/php -y
         ```
         ```sh title="Update Package Lists"
         sudo apt-get update -y
         ```
-        ```sh title="Install Generic PHP packages"
+        ```sh title="Install Generic PHP Packages"
         sudo apt-get install -y --allow-change-held-packages \
         php-imagick php-memcached php-redis php-xdebug php-dev imagemagick mcrypt
         ```
-        ```sh title="PHP 8.4"
+        ```sh title="Install PHP 8.4"
         sudo apt-get install -y --allow-change-held-packages \
         php8.4 php8.4-bcmath php8.4-bz2 php8.4-cgi php8.4-cli php8.4-common php8.4-curl php8.4-dba php8.4-dev \
         php8.4-enchant php8.4-fpm php8.4-gd php8.4-gmp php8.4-imap php8.4-interbase php8.4-intl php8.4-ldap \
@@ -72,121 +115,456 @@ Get your documentation site running locally and make your first customization.
         php8.4-snmp php8.4-soap php8.4-sqlite3 php8.4-sybase php8.4-tidy php8.4-xdebug php8.4-xml php8.4-xmlrpc php8.4-xsl \
         php8.4-zip php8.4-memcached php8.4-redis
         ```
-        ```sh title="PHP 8.4"
-        sudo printf "[openssl]\n" | sudo tee -a /etc/php/8.3/fpm/php.ini \
-        sudo printf "openssl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | sudo tee -a /etc/php/8.3/fpm/php.ini \
-        sudo printf "[curl]\n" | sudo tee -a /etc/php/8.3/fpm/php.ini \
-        sudo printf "curl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | sudo tee -a /etc/php/8.3/fpm/php.ini
+        ```sh title="Configure PHP for Secure Connections"
+        sudo printf "[openssl]\nopenssl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | sudo tee -a /etc/php/8.4/fpm/php.ini
+        sudo printf "[curl]\ncurl.cainfo = /etc/ssl/certs/ca-certificates.crt\n" | sudo tee -a /etc/php/8.4/fpm/php.ini
         ```
+        ```sh title="Restart PHP-FPM"
+        sudo systemctl restart php8.4-fpm
+        ```
+        ```sh title="Verify PHP"
+        php -v
+        ```
+        <Tip>
+            - Optionally, tune PHP-FPM settings in `/etc/php/8.4/fpm/pool.d/www.conf` (e.g., `pm.max_children`) based on server resources.
+        </Tip>
     </Accordion>
+
     <Accordion icon="rectangle-terminal" title="Install Composer">
-        ```sh title="Install Composer"
-        sudo curl -sS https://getcomposer.org/installer | sudo php
+        ```sh title="Download Composer"
+        curl -sS https://getcomposer.org/installer | sudo php
         ```
-        ```sh title="Move composer"
+        ```sh title="Move Composer"
         sudo mv composer.phar /usr/bin/composer
         ```
+        ```sh title="Verify Composer"
+        composer --version
+        ```
     </Accordion>
-    <Accordion icon="rectangle-terminal" title="Install Node and NPM">
-        ```sh title="NodeJS"
+
+    <Accordion icon="rectangle-terminal" title="Install Node.js and NPM">
+        ```sh title="Add Node.js Repository"
         curl -fsSL https://deb.nodesource.com/setup_21.x | sudo -E bash -
         ```
         ```sh title="Update Package Lists"
         sudo apt-get update -y
         ```
-        ```sh title="Install Node"
-        sudo apt install -y nodejs \
-        sudo /usr/bin/npm install -g npm \
-        sudo /usr/bin/npm install -g gulp-cli \
-        sudo /usr/bin/npm install -g bower \
-        sudo /usr/bin/npm install -g yarn \
-        sudo /usr/bin/npm install -g grunt-cli
+        ```sh title="Install Node.js and Tools"
+        sudo apt install -y nodejs
+        sudo npm install -g npm gulp-cli bower yarn grunt-cli
+        ```
+        ```sh title="Verify Node.js and NPM"
+        node -v
+        npm -v
         ```
     </Accordion>
+
     <Accordion icon="rectangle-terminal" title="Install Redis">
         ```sh title="Install Redis"
         sudo apt install -y redis-server
         ```
-        ```sh
+        ```sh title="Enable and Start Redis"
         sudo systemctl enable redis-server
-        ```
-        ```sh
         sudo service redis-server start
         ```
+        ```sh title="Verify Redis"
+        redis-cli ping
+        ```
+        <Tip>
+            - Expected output: `PONG`
+        </Tip>
     </Accordion>
-    <Accordion icon="rectangle-terminal" title="Install Postgres">
-        ```sh title="Install Postgres"
-        sudo apt-get install -y postgresql-17 postgresql-server-dev-12 postgresql-17-postgis-3 postgresql-17-postgis-3-scripts
+
+    <Accordion icon="rectangle-terminal" title="Install PostgreSQL">
+        ```sh title="Install PostgreSQL"
+        sudo apt-get install -y postgresql-17 postgresql-server-dev-17 postgresql-17-postgis-3 postgresql-17-postgis-3-scripts
         ```
-        ```sh title="Configure Postgres Users"
-        sudo -u postgres psql -c "CREATE ROLE homestead LOGIN PASSWORD 'YOUR_DATABASE_PASSWORD' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;"
+        ```sh title="Configure PostgreSQL Users"
+        sudo -u postgres psql -c "CREATE ROLE aleuto_user LOGIN PASSWORD 'secure_password_here' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;"
         ```
-        ```sh title="Configure Postgres Remote Access"
-        sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/17/main/postgresql.conf \
-        sudo echo "host    all             all             0.0.0.0/0               md5" | tee -a /etc/postgresql/17/main/pg_hba.conf
+        ```sh title="Configure Remote Access"
+        sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/17/main/postgresql.conf
+        sudo echo "host all all 0.0.0.0/0 scram-sha-256" | sudo tee -a /etc/postgresql/17/main/pg_hba.conf
         ```
-        ```sh
-        sudo -u postgres /usr/bin/createdb --echo --owner=homestead homestead
+        ```sh title="Create Database"
+        sudo -u postgres createdb --echo --owner=aleuto aleuto
         ```
-        ```sh
+        ```sh title="Restart PostgreSQL"
         sudo service postgresql restart
         ```
-        ```sh title="Disable to lower initial overhead"
-        sudo systemctl disable postgresql
+        ```sh title="Verify PostgreSQL"
+        sudo -u postgres psql -c "\l"
         ```
+        <Tip>
+            - Replace `secure_password_here` with a strong, unique password.
+            - For better security, restrict remote access to specific IPs (e.g., `host all all <your-ip>/32 scram-sha-256`).
+        </Tip>
     </Accordion>
-    <Accordion icon="rectangle-terminal" title="Install Certbot (LetsEncrypt)">
-        ```sh title="Install certbot"
-        sudo apt install -y certbot python3-certbot-nginx
-        ```
-    </Accordion>
-    <Accordion icon="rectangle-terminal" title="Install memcache">
+
+    <Accordion icon="rectangle-terminal" title="Install Memcached">
         ```sh title="Install Memcached"
         sudo apt-get install -y memcached
         ```
+        ```sh title="Enable and Start Memcached"
+        sudo systemctl enable memcached
+        sudo service memcached start
+        ```
+        ```sh title="Verify Memcached"
+        sudo systemctl status memcached
+        ```
     </Accordion>
-    <Accordion icon="rectangle-terminal" title="Upgrade check & Clean Up">
+
+    <Accordion icon="rectangle-terminal" title="Install Supervisor">
+        ```sh title="Install Supervisor"
+        sudo apt install -y supervisor
+        ```
+        ```sh title="Enable and Start Supervisor"
+        sudo systemctl enable supervisor
+        sudo service supervisor start
+        ```
+        ```sh title="Verify Supervisor"
+        sudo systemctl status supervisor
+        ```
+    </Accordion>
+
+    <Accordion icon="rectangle-terminal" title="Configure Supervisor for Horizon and Reverb">
+        ```sh title="Create Horizon Configuration"
+        sudo nano /etc/supervisor/conf.d/horizon.conf
+        ```
+
+        ```sh title="Horizon Configuration"
+        [program:horizon]
+        process_name=%(program_name)s
+        command=php /var/www/aleuto/artisan horizon
+        autostart=true
+        autorestart=true
+        stopasgroup=true
+        killasgroup=true
+        user=aleuto
+        redirect_stderr=true
+        stdout_logfile=/var/www/aleuto/storage/logs/horizon.log
+        stopwaitsecs=3600
+        ```
+
+        ```sh title="Create Reverb Configuration"
+        sudo nano /etc/supervisor/conf.d/reverb.conf
+        ```
+
+        ```sh title="Reverb Configuration"
+        [program:reverb]
+        process_name=%(program_name)s
+        command=php /var/www/aleuto/artisan reverb:start
+        autostart=true
+        autorestart=true
+        stopasgroup=true
+        killasgroup=true
+        user=aleuto
+        redirect_stderr=true
+        stdout_logfile=/var/www/aleuto/storage/logs/reverb.log
+        stopwaitsecs=3600
+        ```
+
+        ```sh title="Update Supervisor"
+        sudo supervisorctl reread
+        sudo supervisorctl update
+        sudo supervisorctl start horizon
+        sudo supervisorctl start reverb
+        ```
+
+        ```sh title="Verify Supervisor Processes"
+        sudo supervisorctl status
+        ```
+
+        <Tip>
+            - Ensure Laravel Horizon and Reverb are installed in your project: `composer require laravel/horizon laravel/reverb`.
+            - Check logs (`/var/www/aleuto/storage/logs/horizon.log`, `/var/www/aleuto/storage/logs/reverb.log`) if processes fail to start.
+        </Tip>
+    </Accordion>
+
+    <Accordion icon="rectangle-terminal" title="Install Certbot">
+        ```sh title="Install Certbot"
+        sudo apt install -y certbot python3-certbot-nginx
+        ```
+        ```sh title="Verify Certbot"
+        certbot --version
+        ```
+    </Accordion>
+
+    <Accordion icon="rectangle-terminal" title="Clean Up">
         ```sh title="Upgrade Check"
         sudo apt upgrade -y
         ```
         ```sh title="Clean Up"
-        sudo apt -y autoremove \
-        sudo apt -y clean
+        sudo apt autoremove -y
+        sudo apt clean
         ```
     </Accordion>
 </AccordionGroup>
 
-### Step 3: Go live
+## Step 3: Upload Source Code
+Upload your Laravel application’s source code and database to the server.
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
+<AccordionGroup>
+    <Accordion defaultOpen icon="rocket" title="Upload Source Code">
+        1. Download [FileZilla Client](https://filezilla-project.org/download.php?type=client).
+        2. Download your application’s [source code](https://codecanyon.net/downloads).
+        3. Upload the source code to `/var/www/aleuto`.
+
+        ```sh title="Set Permissions"
+        sudo chown -R www-data:www-data /var/www/aleuto
+        sudo chmod -R 775 /var/www/aleuto
+        ```
+        <Tip>
+            - Verify the directory structure matches your application’s requirements.
+        </Tip>
+    </Accordion>
+
+    <Accordion defaultOpen icon="rocket" title="Import Database">
+        ```sh title="Import SQL File"
+        psql -U aleuto_user -d aleuto_db -h 127.0.0.1 -p 5432 < /var/www/aleuto/database.sql
+    ```
+    ```sh title="Verify Database Import"
+    sudo -u postgres psql -d aleuto_db -c "\dt"
+    ```
+    <Tip>
+    - Ensure database credentials are set in the `.env` file before importing.
+    - If the import fails, check the SQL file for errors or verify PostgreSQL is running: `sudo systemctl status postgresql`.
+</Tip>
 </Accordion>
+</AccordionGroup>
 
-## Next steps
+## Step 4: Configure Application
+Configure Nginx and Laravel to serve your application.
 
-Now that you have your docs running, explore these key features:
+<AccordionGroup>
+    <Accordion defaultOpen icon="rocket" title="Configure Nginx">
+        ```sh title="Create Nginx Configuration"
+        sudo nano /etc/nginx/sites-available/aleuto
+        ```
 
-<CardGroup cols={2}>
+        ```sh title="Nginx Configuration"
+        server {
+        listen 80;
+        listen [::]:80;
+        server_name your-domain.com www.your-domain.com;
+        root /var/www/aleuto/public;
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+        add_header X-Frame-Options "SAMEORIGIN";
+        add_header X-Content-Type-Options "nosniff";
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+        client_max_body_size 1024M;
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+        index index.php;
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+        charset utf-8;
 
-</CardGroup>
+        location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+        location = /favicon.ico { access_log off; log_not_found off; }
+        location = /robots.txt  { access_log off; log_not_found off; }
+
+        error_page 404 /index.php;
+
+        location /app {
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header Scheme $scheme;
+        proxy_set_header SERVER_PORT $server_port;
+        proxy_set_header REMOTE_ADDR $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_pass http://0.0.0.0:8080;
+    }
+
+        location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+        location ~ /\.(?!well-known).* {
+        deny all;
+    }
+        }
+        ```
+
+        ```sh title="Enable Site"
+        sudo ln -s /etc/nginx/sites-available/aleuto /etc/nginx/sites-enabled/aleuto
+        ```
+
+        ```sh title="Test Nginx Configuration"
+        sudo nginx -t
+        ```
+
+        ```sh title="Restart Nginx"
+        sudo service nginx restart
+        ```
+
+        <Tip>
+            - Replace `your-domain.com` with your actual domain.
+            - Check `/var/log/nginx/error.log` if Nginx fails to start.
+        </Tip>
+    </Accordion>
+
+    <Accordion defaultOpen icon="rocket" title="Configure Laravel">
+        ```sh title="Navigate to Project Directory"
+        cd /var/www/aleuto
+        ```
+
+        ```sh title="Copy .env.example"
+        cp .env.example .env
+        ```
+
+        ```sh title="Edit .env File"
+        nano .env
+        ```
+
+        ```sh title="Example .env Configuration"
+        APP_URL=https://your-domain.com
+        DB_CONNECTION=pgsql
+        DB_HOST=127.0.0.1
+        DB_PORT=5432
+        DB_DATABASE=aleuto_db
+        DB_USERNAME=aleuto_user
+        DB_PASSWORD=secure_password_here
+        ```
+
+        ```sh title="Install Composer Dependencies"
+        composer install --optimize-autoloader --no-dev
+        ```
+
+        ```sh title="Install NPM Dependencies"
+        npm install
+        ```
+
+        ```sh title="Build Frontend Assets"
+        npm run build
+        ```
+
+        ```sh title="Generate Application Key"
+        php artisan key:generate
+        ```
+
+        ```sh title="Set Permissions"
+        sudo chown -R www-data:www-data storage bootstrap/cache
+        sudo chmod -R 775 storage bootstrap/cache
+        ```
+
+        ```sh title="Add User to www-data Group"
+        sudo usermod -a -G www-data aleuto
+        ```
+
+        ```sh title="Create Storage Link"
+        php artisan storage:link
+        ```
+
+        ```sh title="Set Up Laravel Scheduler"
+        crontab -e
+        ```
+
+        ```sh title="Add Cron Job"
+        * * * * * cd /var/www/aleuto && php artisan schedule:run >> /dev/null 2>&1
+        ```
+
+        ```sh title="Verify Laravel"
+        php artisan --version
+        ```
+
+        <Tip>
+            - Test your application by visiting `https://your-domain.com` in a browser.
+            - Ensure all `.env` values match your database and server setup.
+            - Verify Horizon and Reverb: `sudo supervisorctl status`.
+        </Tip>
+    </Accordion>
+</AccordionGroup>
+
+## Step 5: Enable HTTPS
+Secure your application with an SSL certificate using Certbot.
+
+<AccordionGroup>
+    <Accordion defaultOpen icon="rocket" title="Enable HTTPS">
+        ```sh title="Configure DNS"
+        # Set up an A record for your-domain.com and www.your-domain.com pointing to your server’s IP via your DNS provider.
+        ```
+
+        ```sh title="Obtain SSL Certificate"
+        sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+        ```
+
+        ```sh title="Test SSL Renewal"
+        sudo certbot renew --dry-run
+        ```
+
+        ```sh title="Restart Nginx"
+        sudo service nginx restart
+        ```
+
+        ```sh title="Verify SSL"
+        openssl s_client -connect your-domain.com:443 -servername your-domain.com
+        ```
+
+        <Tip>
+            - Ensure DNS is fully propagated before running Certbot.
+            - Certbot automatically configures Nginx for HTTPS.
+        </Tip>
+    </Accordion>
+</AccordionGroup>
+
+## Step 6: Set Up Firewall
+Configure the firewall to allow necessary traffic.
+
+<AccordionGroup>
+    <Accordion icon="rectangle-terminal" title="Configure Firewall">
+        ```sh title="Allow SSH, HTTP, HTTPS, and Reverb"
+        sudo ufw allow 22
+        sudo ufw allow 80
+        sudo ufw allow 443
+        sudo ufw allow 6001
+        ```
+
+        ```sh title="Enable Firewall"
+        sudo ufw enable
+        ```
+
+        ```sh title="Verify Firewall Status"
+        sudo ufw status
+        ```
+
+        <Tip>
+            - Port 6001 is the default for Laravel Reverb; adjust if using a different port in your Reverb configuration.
+            - Disable root SSH access for better security: edit `/etc/ssh/sshd_config` and set `PermitRootLogin no`, then restart SSH: `sudo systemctl restart sshd`.
+        </Tip>
+    </Accordion>
+</AccordionGroup>
+
+## Step 7: Troubleshooting
+Common issues and solutions:
+
+- **Nginx Fails to Start**:
+- Check syntax: `sudo nginx -t`
+- View logs: `cat /var/log/nginx/error.log`
+- **Database Connection Errors**:
+- Verify `.env` credentials match the PostgreSQL user and database.
+- Test connection: `psql -U aleuto_user -d aleuto_db -h 127.0.0.1`
+- **Permission Issues**:
+- Ensure `www-data` owns files: `sudo chown -R www-data:www-data /var/www/aleuto`
+- Check permissions: `ls -l /var/www/aleuto`
+- **Application Not Loading**:
+- Verify Laravel logs: `cat /var/www/aleuto/storage/logs/laravel.log`
+- Ensure PHP-FPM is running: `sudo systemctl status php8.4-fpm`
+- **Horizon or Reverb Not Running**:
+- Check Supervisor status: `sudo supervisorctl status`
+- View logs: `cat /var/www/aleuto/storage/logs/horizon.log` or `cat /var/www/aleuto/storage/logs/reverb.log`
+- Ensure packages are installed: `composer require laravel/horizon laravel/reverb`
+
+<Tip>
+    - For persistent issues, check service logs (e.g., `/var/log/php8.4-fpm.log`, `/var/log/postgresql/postgresql-17-main.log`).
+    - Contact your hosting provider or consult your application’s documentation for specific requirements.
+</Tip>
+
+## Summary
+You’ve successfully set up an Ubuntu 24.04 server with Nginx, PHP 8.4, PostgreSQL 17, Node.js, Redis, Memcached, Supervisor, and a Laravel application with Horizon and Reverb, secured with an SSL certificate. Your application should now be accessible at `https://your-domain.com`.
